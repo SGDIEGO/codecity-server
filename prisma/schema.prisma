@@ -1,11 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-ts"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -13,8 +7,74 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model UserRole {
+  id               String @id
+  min_interactions Int
+  users            User[]
+}
+
 model User {
-  id    Int     @default(autoincrement()) @id
-  email String  @unique
-  name  String?
+  id           String     @id
+  name         String?    @unique
+  email        String     @unique
+  password     String     @db.VarChar(200)
+  interactions Int        @default(0)
+  user_role_id String
+  profile_url  String?
+  Forum        Forum[]
+  Message      Message[]
+  Payments     Payments[]
+  user_role    UserRole   @relation(fields: [user_role_id], references: [id])
+}
+
+model Forum {
+  id             String   @id
+  name           String   @unique
+  total_users    Int      @default(0)
+  total_likes    Int      @default(0)
+  total_messages Int      @default(0)
+  creation_date  DateTime @default(now())
+  creator_id     String
+  creator        User     @relation(fields: [creator_id], references: [id])
+  Thread         Thread[]
+}
+
+model Thread {
+  id             String     @id
+  name           String?    @unique
+  total_users    Int        @default(0)
+  total_likes    Int        @default(0)
+  total_messages Int        @default(0)
+  creation_date  DateTime   @default(now())
+  private        Boolean    @default(false)
+  access_price   Float?
+  image_url      String?
+  forum_id       String
+  Message        Message[]
+  Payments       Payments[]
+  forum          Forum      @relation(fields: [forum_id], references: [id])
+}
+
+model Message {
+  id                String    @id
+  content           String    @db.VarChar(500)
+  likes             Int       @default(0)
+  dislikes          Int       @default(0)
+  id_thread         String
+  id_user           String
+  id_parent_message String?
+  parent_message    Message?  @relation("MessageToMessage", fields: [id_parent_message], references: [id])
+  message           Message[] @relation("MessageToMessage")
+  thread            Thread    @relation(fields: [id_thread], references: [id])
+  user              User      @relation(fields: [id_user], references: [id])
+}
+
+model Payments {
+  id                String   @id
+  start_access_date DateTime @default(now())
+  end_access_date   DateTime
+  id_thread         String
+  id_user           String
+  thread            Thread   @relation(fields: [id_thread], references: [id])
+  user              User     @relation(fields: [id_user], references: [id])
 }
