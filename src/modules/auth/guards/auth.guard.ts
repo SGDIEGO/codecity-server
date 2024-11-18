@@ -15,11 +15,8 @@ export class AuthGuard implements CanActivate {
     if (!validRoles) return false;
     if (validRoles.length == 0) return false;
 
-    console.log('validRoles: ', validRoles);
-
     const request = context.switchToHttp().getRequest();
     const roles = request.user;
-    console.log('request: ', request);
     return true;
   }
 }

@@ -1,25 +1,21 @@
-import { Module, Logger } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ForumController } from './forum.controller';
 import { JwtStrategy } from 'src/shared/stragegy/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
-import { UserRepository } from 'src/core/usecases/user.case';
-import { DatabaseModule } from 'src/infraestructure/database/database.module';
+import { DatabaseModule } from 'src/common/infraestructure/database/database.module';
 import { ForumService } from './forum.service';
-import { ForumRepository } from 'src/core/usecases/forum.case';
 import { DmsModule } from '../dms/dms.module';
+import { AdapterModule } from 'src/common/infraestructure';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     DatabaseModule,
-    PassportModule.register({
-      defaultStrategy: 'jwt',
-    }),
+    AdapterModule,
+    AuthModule,
     DmsModule
   ],
   providers: [
-    Logger,
-    UserRepository,
-    ForumRepository,
     JwtStrategy,
     ForumService,
   ],

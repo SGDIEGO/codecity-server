@@ -9,56 +9,66 @@ import {
   Body,
   Put,
   Delete,
+  Query,
+  Inject,
 } from '@nestjs/common';
 import { Auth } from '../auth/decorator/auth.decorator';
 import { UserRole } from 'src/shared/enums/role.enums';
 import { ForumService } from './forum.service';
 import { ForumCreateDto, ForumUpdateDto } from './dto/forum.dto';
+import { IErrorHandlerAdapter } from 'src/common/application';
+import { ErrorHandlerAdapter } from 'src/common/infraestructure/adapters/errorhandle.adapter';
+import { ILoggerAdapter } from 'src/common/application/adapters/logger.adapter';
+import { LoggerAdapter } from 'src/common/infraestructure/adapters/logger.adapter';
+import { ApiHeader } from '@nestjs/swagger';
 
 @Controller('forums')
 export class ForumController {
   constructor(
-    private readonly logger: Logger,
     private readonly forumService: ForumService,
+
+    @Inject(LoggerAdapter)
+    private readonly logger: ILoggerAdapter,
+
+    @Inject(ErrorHandlerAdapter)
+    private readonly errorHandling: IErrorHandlerAdapter
   ) { }
 
-  @Auth()
   @Get()
-  async getAllForums() {
+  async getAllForums(@Query('page') page: number = 1) {
     try {
-      return await this.forumService.getAllForums();
+      return await this.forumService.getAllForums(page, 10);
     } catch (error) {
-      this.handleErrorFunc(error);
+      this.errorHandling.handleControllerError(this.logger, error)
     }
   }
 
-  @Auth(UserRole.Student)
-  @Post()
-  async createForum(@Body() body: ForumCreateDto) {
-    try {
-      return await this.forumService.createForum(body);
-    } catch (error) {
-      this.handleErrorFunc(error);
-    }
-  }
-
-  @Auth()
   @Get(':id')
   async getForum(@Param('id') id: string) {
     try {
       return await this.forumService.getForum(id);
     } catch (error) {
-      this.handleErrorFunc(error);
+      this.errorHandling.handleControllerError(this.logger, error)
     }
   }
 
-  @Auth()
+  @Auth(UserRole.Staff)
+  @Post()
+  async createForum(@Body() body: ForumCreateDto) {
+    try {
+      return await this.forumService.createForum(body);
+    } catch (error) {
+      this.errorHandling.handleControllerError(this.logger, error)
+    }
+  }
+
+  @Auth(UserRole.Staff)
   @Put(':id')
   async updateForum(@Param('id') id: string, @Body() newForum: ForumUpdateDto) {
     try {
       return await this.forumService.updateForum(id, newForum);
     } catch (error) {
-      this.handleErrorFunc(error);
+      this.errorHandling.handleControllerError(this.logger, error)
     }
   }
 
@@ -68,12 +78,17 @@ export class ForumController {
     try {
       return await this.forumService.deleteForum(id)
     } catch (error) {
-      this.handleErrorFunc(error);
+      this.errorHandling.handleControllerError(this.logger, error)
     }
   }
 
-  private handleErrorFunc(error: Error) {
-    this.logger.log(error);
-    throw error;
+  @Get(":id/threads")
+  async getAllThreads(@Param(':id') id: string) {
+    try {
+      return this.forumService.getAllThreads(id)
+    } catch (error) {
+      this.errorHandling.handleControllerError(this.logger, error)
+    }
   }
+
 }

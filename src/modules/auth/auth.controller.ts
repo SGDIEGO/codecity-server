@@ -2,26 +2,39 @@ import {
   Body,
   Controller,
   Get,
-  HttpException,
-  HttpStatus,
+  Inject,
   Logger,
   Post,
+  Redirect,
+  Response,
+  UseGuards,
 } from '@nestjs/common';
-import { UserSigninDto, UserSignupDto } from './dto/user.dto';
+import { UserSigninDto, UserSignupDto } from './dto';
 import { AuthService } from './auth.service';
+import { GoogleOAuthGuard } from './guards/google.guard';
+import { IErrorHandlerAdapter } from 'src/common/application';
+import { ErrorHandlerAdapter } from 'src/common/infraestructure/adapters/errorhandle.adapter';
+import { ILoggerAdapter } from 'src/common/application/adapters/logger.adapter';
+import { LoggerAdapter } from 'src/common/infraestructure/adapters/logger.adapter';
+import { ApiBody } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly logger: Logger,
-  ) {}
+
+    @Inject(LoggerAdapter)
+    private readonly logger: ILoggerAdapter,
+
+    @Inject(ErrorHandlerAdapter)
+    private readonly errorhandler: IErrorHandlerAdapter
+  ) { }
   @Post('signin')
   async signIn(@Body() user: UserSigninDto) {
     try {
       return await this.authService.signIn(user);
     } catch (error) {
-      this.handleErrorFunc(error);
+      this.errorhandler.handleControllerError(this.logger, error)
     }
   }
 
@@ -30,13 +43,26 @@ export class AuthController {
     try {
       return await this.authService.signUp(user);
     } catch (error) {
-      this.handleErrorFunc(error);
+      this.errorhandler.handleControllerError(this.logger, error)
     }
   }
 
-  private handleErrorFunc(error: Error) {
-    this.logger.log(error);
+  @Get('google')
+  @UseGuards(GoogleOAuthGuard)
+  async googleAuth() { }
 
-    throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+  @Get('google-redirect')
+  @Redirect()
+  @UseGuards(GoogleOAuthGuard)
+  async googleAuthCallback(@Response() res) {
+    try {
+      const { token } = res.req.user
+      return {
+        url: process.env.GOOGLE_CLIENT_REDIRECT + `?token=${token}`,
+      }
+    } catch (error) {
+      this.errorhandler.handleControllerError(this.logger, error)
+    }
   }
+
 }

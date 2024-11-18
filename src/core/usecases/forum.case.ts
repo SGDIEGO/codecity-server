@@ -1,7 +1,9 @@
 import { Forum, Prisma } from '@prisma/client';
 import { IForumRepository } from '../domain/repositories/forum.repository';
-import { PrismaService } from 'src/infraestructure/database/prisma.service';
+import { PrismaService } from 'src/common/infraestructure/database/prisma.service';
 import { Injectable } from '@nestjs/common';
+import { ForumCreateDto, ForumFindDto } from 'src/modules/forum/dto/forum.dto';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class ForumRepository implements IForumRepository {
@@ -20,15 +22,23 @@ export class ForumRepository implements IForumRepository {
       data,
     });
   }
-  async findAll(): Promise<Array<Forum>> {
-    return await this.prisma.forum.findMany();
+  async findAll(skip: number, take: number): Promise<Array<Forum>> {
+    return await this.prisma.forum.findMany({
+      skip,
+      take
+    });
   }
 
-  async create(forumDto: Prisma.ForumCreateInput): Promise<Forum> {
-    return await this.prisma.forum.create({ data: forumDto });
+  async create(forumDto: ForumCreateDto): Promise<Forum> {
+    return await this.prisma.forum.create({
+      data: {
+        ...forumDto,
+        id: randomUUID()
+      }
+    });
   }
 
-  async find(where: Prisma.ForumWhereUniqueInput): Promise<Forum> {
+  async find(where: ForumFindDto): Promise<Forum> {
     return await this.prisma.forum.findFirst({
       where,
     });

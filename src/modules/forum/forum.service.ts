@@ -3,19 +3,20 @@ import { Forum } from '@prisma/client';
 import { IForumRepository } from 'src/core/domain/repositories/forum.repository';
 import { ForumCreateDto, ForumUpdateDto } from './dto/forum.dto';
 import { ForumRepository } from 'src/core/usecases/forum.case';
-import { DmsService } from '../dms/dms.service';
+import { IThreadRespository } from 'src/core/domain/repositories/thread.repository';
+import { ThreadRepository } from 'src/core/usecases/thread.case';
 
 export class ForumService {
   constructor(
     @Inject(ForumRepository)
     private readonly forumRepository: IForumRepository,
-    private readonly dmsService: DmsService
+
+    @Inject(ThreadRepository)
+    private readonly threadRepository: IThreadRespository
   ) { }
 
-  async getAllForums(): Promise<Forum[]> {
-    console.log(this.dmsService);
-    
-    return await this.forumRepository.findAll();
+  async getAllForums(page: number, limit: number): Promise<Forum[]> {
+    return await this.forumRepository.findAll((page - 1) * limit, limit);
   }
 
   async getForum(id: string): Promise<Forum> {
@@ -41,5 +42,10 @@ export class ForumService {
     if (!forum) throw new NotFoundException('Error deleting forum')
 
     return forum;
+  }
+
+  async getAllThreads(forum_id: string) {
+    const threads = await this.threadRepository.getThreadUnique({ forum_id })
+    return threads;
   }
 }

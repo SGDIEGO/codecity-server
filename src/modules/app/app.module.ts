@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { ForumModule } from 'src/modules/forum/forum.module';
+import { ThreadModule } from '../thread/thread.module';
+import { MessageModule } from '../message/message.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
@@ -12,8 +13,9 @@ import { ForumModule } from 'src/modules/forum/forum.module';
     }),
     AuthModule,
     ForumModule,
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+    ThreadModule,
+    MessageModule,
+    UserModule
+  ]
 })
-export class AppModule {}
+export class AppModule { }
