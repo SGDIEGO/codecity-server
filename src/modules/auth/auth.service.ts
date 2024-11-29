@@ -1,8 +1,7 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserSigninDto, UserSignupDto } from './dto/auth.dto';
+import { UserSigninDto, UserSigninGoogleOauthDto, UserSignupDto } from './dto/auth.dto';
 import { jwtPayload } from 'src/shared/payload/auth.payload';
-import { hash, randomUUID } from 'crypto';
 import { IUserRepository } from 'src/core/domain/repositories/user.repository';
 import { EncryptService } from 'src/shared/utils/encryption.service';
 import { UserRole } from 'src/shared/enums/role.enums';
@@ -27,14 +26,15 @@ export class AuthService {
 
     const token = await this.signToken({ id: userInfo.id });
     return {
-      token
+      token,
+      user_id: userInfo.id
     }
   }
 
   async signUp(user: UserSignupDto): Promise<AuthResponseDto> {
     const hashedPassword = await this.encryptService.hashPassword(user.password);
     const userInfo = await this.userRepository.create({
-      id: randomUUID(),
+      id: await this.encryptService.generateRandomUUID(),
       name: user.name,
       email: user.email,
       password: hashedPassword,
@@ -47,8 +47,25 @@ export class AuthService {
 
     const token = await this.signToken({ id: userInfo.id });
     return {
-      token
+      token,
+      user_id: userInfo.id
     };
+  }
+
+  async signInGoogle(user: UserSigninGoogleOauthDto) {
+    const userInfo = await this.userRepository.find({ email: user.email });
+    if (userInfo) {
+      const token = await this.signToken({ id: userInfo.id });
+      return {
+        token,
+        user_id: userInfo.id
+      }
+    }
+
+    return await this.signUp({
+      ...user,
+      password: await this.encryptService.generateRandomUUID(),
+    })
   }
 
   async signToken(payload: jwtPayload) {

@@ -1,59 +1,56 @@
-import { Body, Controller, Get, Inject, Logger, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Logger, Param, Post, Put, Request } from '@nestjs/common';
 import { MessageService } from './message.service';
-import { ErrorHandlerAdapter } from 'src/common/infraestructure/adapters/errorhandle.adapter';
-import { IErrorHandlerAdapter } from 'src/common/application';
-import { MessageCreateDto } from './dto/message.dto';
+import { InteractionMessageUserDto, MessageCreateDto, MessageUpdateDto } from './dto/message.dto';
 import { Auth } from '../auth/decorator/auth.decorator';
-import { ILoggerAdapter } from 'src/common/application/adapters/logger.adapter';
-import { LoggerAdapter } from 'src/common/infraestructure/adapters/logger.adapter';
+import { UserRole } from 'src/shared/enums/role.enums';
+import { ApiBearerAuth, ApiHeader } from '@nestjs/swagger';
 
 @Controller('messages')
 export class MessageController {
     constructor(
         private readonly messageService: MessageService,
-        
-        @Inject(LoggerAdapter)
-        private readonly logger: ILoggerAdapter,
-
-        @Inject(ErrorHandlerAdapter)
-        private readonly errorHandling: IErrorHandlerAdapter
     ) { }
     @Get()
     async getAllMessages() {
-        try {
-            return await this.messageService.getAllMessages();
-        } catch (error) {
-            this.errorHandling.handleControllerError(this.logger, error);
-        }
+        return await this.messageService.getAllMessages();
     }
 
     @Get(':id')
     async getMessageById(@Param('id') id: string) {
-        try {
-            return await this.messageService.getMessageById(id)
-        } catch (error) {
-            this.errorHandling.handleControllerError(this.logger, error);
-        }
+        return await this.messageService.getMessageById(id)
     }
 
-    @Auth()
+    @ApiBearerAuth()
+    @Auth(UserRole.Student)
     @Post()
-    async createMessage(@Body() messageDto: MessageCreateDto) {
-        try {
-            return await this.messageService.createMessage(messageDto)
-        } catch (error) {
-            this.errorHandling.handleControllerError(this.logger, error);
-        }
+    async createMessage(@Request() req, @Body() messageDto: MessageCreateDto) {
+        return await this.messageService.createMessage(messageDto)
     }
 
+    @Auth(UserRole.Staff)
     @Put(':id')
-    async updateMessage(@Param('id') id: string, @Body() messageDto: MessageCreateDto) {
-        try {
-            return await this.messageService.updateMessage(id, messageDto)
-        } catch (error) {
-            this.errorHandling.handleControllerError(this.logger, error);
-        }
+    async updateMessage(@Param('id') id: string, @Body() messageDto: MessageUpdateDto) {
+        return await this.messageService.updateMessage(id, messageDto)
     }
 
-    
+    @Auth(UserRole.Student)
+    @ApiBearerAuth()
+    @Put(":id/like")
+    async likeUser(@Body() likeMessageUserDto: InteractionMessageUserDto) {
+        return await this.messageService.LikeUser(likeMessageUserDto);
+    }
+
+    @Auth(UserRole.Student)
+    @ApiBearerAuth()
+    @Put(":id/dislike")
+    async disLikeUser(@Body() dislikeMessageUserDto: InteractionMessageUserDto) {
+        return await this.messageService.disLikeUser(dislikeMessageUserDto);
+    }
+
+    @ApiBearerAuth()
+    @Auth()
+    @Get(':id/interactions')
+    async getInteractions(@Param('id') id: string) {
+        return await this.messageService.getInteractions(id);
+    }
 }

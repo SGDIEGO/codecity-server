@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { IsString, Min, IsDate, IsNotEmpty } from "class-validator"
+import { IsString, Min, IsDate, IsNotEmpty, IsDateString } from "class-validator"
 
 export class ForumEntity {
     @ApiProperty()
@@ -25,7 +25,7 @@ export class ForumEntity {
     
     @ApiProperty()
     @IsNotEmpty()
-    @IsDate()
+    @IsDateString()
     creation_date: Date
 
     @ApiProperty()

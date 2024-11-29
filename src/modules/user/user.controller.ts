@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UserCreateDto, UserUpdateDto } from './dto';
 import { UserService } from './user.service';
 import { Auth } from '../auth/decorator/auth.decorator';
 import { UserRole } from 'src/shared/enums/role.enums';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FileSizeValidationPipe } from 'src/shared/pipe/file-size.pipe';
 
 @Controller('users')
 export class UserController {
@@ -25,8 +27,11 @@ export class UserController {
     }
 
     @Put(':id')
-    async updateUser(@Param('id') id: string, @Body() body: UserUpdateDto) {
-        return await this.userService.updateUser(id, body)
+    @UseInterceptors(
+        FileInterceptor('file'),
+    )
+    async updateUser(@Param('id') id: string, @UploadedFile(new FileSizeValidationPipe()) file: Express.Multer.File, @Body() body: UserUpdateDto) {
+        return await this.userService.updateUser(id, body, file)
     }
 
     //@Auth(UserRole.Staff)

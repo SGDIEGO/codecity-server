@@ -7,6 +7,7 @@ import { IErrorHandlerAdapter } from 'src/common/application';
 import { ErrorHandlerAdapter } from 'src/common/infraestructure/adapters/errorhandle.adapter';
 import { ILoggerAdapter } from 'src/common/application/adapters/logger.adapter';
 import { LoggerAdapter } from 'src/common/infraestructure/adapters/logger.adapter';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('threads')
 export class ThreadController {
@@ -38,6 +39,7 @@ export class ThreadController {
         }
     }
 
+    @ApiBearerAuth()
     @Auth(UserRole.Middle)
     @Post()
     async createThread(@Body() threadDto: ThreadCreateDto) {
@@ -48,11 +50,23 @@ export class ThreadController {
         }
     }
 
+    @ApiBearerAuth()
     @Auth(UserRole.Staff)
     @Put(':id')
     async updateThread(@Param('id') id: string, @Body() threadDto: ThreadUpdateDto) {
         try {
             return await this.threadService.updateThread(id, threadDto)
+        } catch (error) {
+            this.handleErrorFunc(error)
+        }
+    }
+
+    @ApiBearerAuth()
+    @Auth()
+    @Get(':id/messages')
+    async getThreadMessages(@Param('id') id: string) {
+        try {
+            return await this.threadService.getThreadMessages(id)
         } catch (error) {
             this.handleErrorFunc(error)
         }

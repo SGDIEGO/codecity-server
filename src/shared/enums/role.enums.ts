@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto";
+
 export enum UserRole {
   Student = 'student',
   Trainee = 'trainee',
@@ -18,27 +20,33 @@ export enum UserRoleMinTransactions {
 
 export const UserRolesArray = [
   {
-    id: UserRole.Student,
+    id: randomUUID(),
+    name: UserRole.Student,
     min_interactions: UserRoleMinTransactions.Student,
   },
   {
-    id: UserRole.Trainee,
+    id: randomUUID(),
+    name: UserRole.Trainee,
     min_interactions: UserRoleMinTransactions.Trainee,
   },
   {
-    id: UserRole.Junior,
+    id: randomUUID(),
+    name: UserRole.Junior,
     min_interactions: UserRoleMinTransactions.Junior,
   },
   {
-    id: UserRole.Middle,
+    id: randomUUID(),
+    name: UserRole.Middle,
     min_interactions: UserRoleMinTransactions.Middle,
   },
   {
-    id: UserRole.Senior,
+    id: randomUUID(),
+    name: UserRole.Senior,
     min_interactions: UserRoleMinTransactions.Senior,
   },
   {
-    id: UserRole.Staff,
+    id: randomUUID(),
+    name: UserRole.Staff,
     min_interactions: UserRoleMinTransactions.Staff,
   },
 ]

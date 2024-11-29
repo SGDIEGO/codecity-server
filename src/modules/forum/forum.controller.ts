@@ -20,7 +20,7 @@ import { IErrorHandlerAdapter } from 'src/common/application';
 import { ErrorHandlerAdapter } from 'src/common/infraestructure/adapters/errorhandle.adapter';
 import { ILoggerAdapter } from 'src/common/application/adapters/logger.adapter';
 import { LoggerAdapter } from 'src/common/infraestructure/adapters/logger.adapter';
-import { ApiHeader } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader } from '@nestjs/swagger';
 
 @Controller('forums')
 export class ForumController {
@@ -52,6 +52,7 @@ export class ForumController {
     }
   }
 
+  @ApiBearerAuth()
   @Auth(UserRole.Staff)
   @Post()
   async createForum(@Body() body: ForumCreateDto) {
@@ -62,6 +63,7 @@ export class ForumController {
     }
   }
 
+  @ApiBearerAuth()
   @Auth(UserRole.Staff)
   @Put(':id')
   async updateForum(@Param('id') id: string, @Body() newForum: ForumUpdateDto) {
@@ -72,6 +74,7 @@ export class ForumController {
     }
   }
 
+  @ApiBearerAuth()
   @Auth(UserRole.Staff)
   @Delete(':id')
   async deleteForum(@Param('id') id: string) {

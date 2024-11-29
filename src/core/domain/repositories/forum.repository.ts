@@ -1,6 +1,5 @@
 import { Forum, Prisma, PrismaClient, PrismaPromise } from '@prisma/client';
 import { ForumCreateDto, ForumFindDto } from 'src/modules/forum/dto/forum.dto';
-import { ForumEntity } from '../entities/Forum.entity';
 
 export interface IForumRepository {
   findAll(skip: number, take: number): Promise<Array<Forum>>;

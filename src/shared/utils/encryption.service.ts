@@ -1,5 +1,6 @@
 import * as bcrypt from "bcrypt"
 import { Injectable } from "@nestjs/common";
+import { randomUUID } from "crypto";
 
 @Injectable()
 export class EncryptService {
@@ -14,5 +15,9 @@ export class EncryptService {
 
     async comparePasswords(password: string, hashedPassword: string): Promise<boolean> {
         return await bcrypt.compare(password, hashedPassword)
+    }
+
+    async generateRandomUUID(): Promise<string> {
+        return randomUUID()
     }
 }

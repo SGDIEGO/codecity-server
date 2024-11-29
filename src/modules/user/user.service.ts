@@ -8,6 +8,7 @@ import { IErrorHandlerAdapter } from 'src/common/application';
 import { ErrorHandlerAdapter } from 'src/common/infraestructure/adapters/errorhandle.adapter';
 import { UserRoleRepository } from 'src/core/usecases/userrole.case';
 import { IUserRoleRepository } from 'src/core/domain/repositories/userroles.repository';
+import { S3Service } from 'src/shared/services/s3.service';
 
 @Injectable()
 export class UserService {
@@ -22,7 +23,9 @@ export class UserService {
         private readonly loggerAdapter: ILoggerAdapter,
 
         @Inject(ErrorHandlerAdapter)
-        private readonly errorHandlerAdapter: IErrorHandlerAdapter
+        private readonly errorHandlerAdapter: IErrorHandlerAdapter,
+
+        private readonly s3Service: S3Service
     ) { }
 
     async getUsers() {
@@ -46,8 +49,18 @@ export class UserService {
             this.errorHandlerAdapter.handleControllerError(this.loggerAdapter, error)
         }
     }
-    async updateUser(id: string, body: UserUpdateDto) {
+    async updateUser(id: string, body: UserUpdateDto, file?: Express.Multer.File) {
         try {
+            const existingUser = await this.userRepository.find({ id })
+
+            if (file) {
+                if (existingUser.profile_url) {
+                    const fileKey = existingUser.profile_url.split('/').pop();
+                    await this.s3Service.deleteFile(fileKey);
+                }
+                body.profile_url = await this.s3Service.uploadFile(file);
+            }
+
             return await this.userRepository.update({ id }, body)
         } catch (error) {
             this.errorHandlerAdapter.handleControllerError(this.loggerAdapter, error)

@@ -45,7 +45,7 @@ export class ForumService {
   }
 
   async getAllThreads(forum_id: string) {
-    const threads = await this.threadRepository.getThreadUnique({ forum_id })
+    const threads = await this.threadRepository.getAllThreads({ forum_id })
     return threads;
   }
 }

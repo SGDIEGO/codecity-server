@@ -1,29 +1,35 @@
-import { IsDate, IsNotEmpty, IsNumber, IsString, Min } from "class-validator"
+import { ApiProperty } from "@nestjs/swagger"
+import { IsNotEmpty, IsNumber, IsString, Min } from "class-validator"
 
-export class Message {
+export class MessageEntity {
+    @ApiProperty()
     @IsString()
     id: string
 
+    @ApiProperty()
     @IsString()
     content: string
 
+    @ApiProperty()
     @IsNumber()
     @Min(0)
     likes: number
 
+    @ApiProperty()
     @IsNumber()
     @Min(0)
     dislikes: number
 
+    @ApiProperty()
     @IsString()
     @IsNotEmpty()
-    id_thread: string
+    user_id: string
 
+    @ApiProperty()
     @IsString()
     @IsNotEmpty()
-    id_user: string
+    thread_id: string
 
-    @IsString()
-    @IsNotEmpty()
-    id_parent_message: string
+    @ApiProperty()
+    parent_message_id?: string | null
 }

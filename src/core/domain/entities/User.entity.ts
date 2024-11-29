@@ -1,35 +1,28 @@
-import { ApiProperty } from "@nestjs/swagger"
-import { IsEmail, IsNotEmpty, IsString, IsStrongPassword, Min } from "class-validator"
+import { IsNotEmpty, IsNumber, IsString, Min } from "class-validator"
 
 export class UserEntity {
-    @ApiProperty()
     @IsString()
     id: string
 
-    @ApiProperty()
     @IsNotEmpty()
     @IsString()
     name: string
 
-    @ApiProperty()
     @IsNotEmpty()
-    @IsEmail()
+    @IsString()
     email: string
 
-    @ApiProperty()
     @IsNotEmpty()
-    @IsStrongPassword()
+    @IsString()
     password: string
 
-    @ApiProperty()
+    @IsNumber()
     @Min(0)
     interactions: number
 
-    @ApiProperty()
     @IsString()
     profile_url: string
 
-    @ApiProperty()
     @IsNotEmpty()
     @IsString()
     user_role_id: string

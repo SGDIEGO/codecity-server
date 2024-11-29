@@ -1,6 +1,6 @@
 import { PrismaService } from "src/common/infraestructure/database/prisma.service";
 import { IUserRoleRepository } from "../domain/repositories/userroles.repository";
-import { UserRole, UserRoleMinTransactions, UserRolesArray } from "src/shared/enums/role.enums";
+import { UserRolesArray } from "src/shared/enums/role.enums";
 
 export class UserRoleRepository implements IUserRoleRepository {
     constructor(

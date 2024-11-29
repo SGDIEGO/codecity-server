@@ -1,13 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { IThreadRespository } from 'src/core/domain/repositories/thread.repository';
-import { ThreadRepository } from 'src/core/usecases';
+import { MessageRepository, ThreadRepository } from 'src/core/usecases';
 import { ThreadCreateDto, ThreadUpdateDto } from './dto/thread.dto';
+import { IMessageRepository } from 'src/core/domain/repositories';
 
 @Injectable()
 export class ThreadService {
     constructor(
         @Inject(ThreadRepository)
-        private readonly threadRepository: IThreadRespository
+        private readonly threadRepository: IThreadRespository,
+
+        @Inject(MessageRepository)
+        private readonly messageRepository: IMessageRepository
     ) { }
 
     async getAllThreads() {
@@ -26,4 +30,7 @@ export class ThreadService {
         return await this.threadRepository.updateThread({ id }, threadDto)
     }
 
+    async getThreadMessages(thread_id: string) {
+        return await this.messageRepository.getAllMessages({ thread_id })
+    }
 }

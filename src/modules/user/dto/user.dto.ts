@@ -1,4 +1,6 @@
+import { PartialType } from "@nestjs/swagger";
 import { Prisma } from "@prisma/client";
+import { UserEntity } from "src/core/domain/entities/User.entity";
 
 export class UserCreateDto implements Prisma.UserCreateInput {
     id: string;
@@ -12,4 +14,4 @@ export class UserCreateDto implements Prisma.UserCreateInput {
     Payments?: Prisma.PaymentsCreateNestedManyWithoutUserInput;
     user_role: Prisma.UserRoleCreateNestedOneWithoutUsersInput;
 }
-export class UserUpdateDto implements Prisma.UserUpdateInput {}
+export class UserUpdateDto extends PartialType(UserEntity) {}

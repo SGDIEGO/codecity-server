@@ -49,14 +49,19 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
-  async googleAuth() { }
+  async googleAuth() {
+    console.log("google");
+  }
 
   @Get('google-redirect')
   @Redirect()
   @UseGuards(GoogleOAuthGuard)
   async googleAuthCallback(@Response() res) {
     try {
-      const { token } = res.req.user
+      const user = res.req.user
+      if (!user) throw new Error('Login not successful')
+
+      const { token } = await this.authService.signInGoogle(user)
       return {
         url: process.env.GOOGLE_CLIENT_REDIRECT + `?token=${token}`,
       }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { IUserRepository } from '../domain/repositories/user.repository';
 import { PrismaService } from 'src/common/infraestructure/database/prisma.service';
 import { Prisma, User } from '@prisma/client';
@@ -31,6 +31,13 @@ export class UserRepository implements IUserRepository {
         data
       });
     } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        switch (error.code) {
+          case 'P2002':
+            throw new BadRequestException("Data already exists in database.")
+        }
+      }
+
       throw error;
     }
   }
