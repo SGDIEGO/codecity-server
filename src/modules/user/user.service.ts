@@ -37,7 +37,7 @@ export class UserService {
     }
     async getUserById(id: string) {
         try {
-            return await this.userRepository.find({ id })
+            return await this.userRepository.getUser({ id })
         } catch (error) {
             this.errorHandlerAdapter.handleControllerError(this.loggerAdapter, error)
         }
@@ -52,7 +52,6 @@ export class UserService {
     async updateUser(id: string, body: UserUpdateDto, file?: Express.Multer.File) {
         try {
             const existingUser = await this.userRepository.find({ id })
-
             if (file) {
                 if (existingUser.profile_url) {
                     const fileKey = existingUser.profile_url.split('/').pop();
@@ -62,6 +61,13 @@ export class UserService {
             }
 
             return await this.userRepository.update({ id }, body)
+        } catch (error) {
+            this.errorHandlerAdapter.handleControllerError(this.loggerAdapter, error)
+        }
+    }
+    async getInteractions(id: string) {
+        try {
+            return this.userRepository.find({ id }, { interactions: true })
         } catch (error) {
             this.errorHandlerAdapter.handleControllerError(this.loggerAdapter, error)
         }

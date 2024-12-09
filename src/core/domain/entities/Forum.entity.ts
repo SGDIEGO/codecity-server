@@ -14,19 +14,23 @@ export class ForumEntity {
     @ApiProperty()
     @Min(0)
     total_users: number
-    
+
     @ApiProperty()
     @Min(0)
     total_likes: number
-    
+
     @ApiProperty()
     @Min(0)
     total_messages: number
-    
+
     @ApiProperty()
     @IsNotEmpty()
     @IsDateString()
     creation_date: Date
+
+    @ApiProperty()
+    @IsString()
+    image_url?: string
 
     @ApiProperty()
     @IsString()

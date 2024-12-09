@@ -11,10 +11,67 @@ export class ThreadRepository implements IThreadRespository {
         private readonly prisma: PrismaService
     ) { }
 
-    async getThreadUnique(where: Prisma.ThreadWhereUniqueInput): Promise<Thread> {
-        return await this.prisma.thread.findUnique({
-            where
-        })
+    async getThreadUnique(where: Prisma.ThreadWhereUniqueInput) {
+        const thread = await this.prisma.thread.findUnique({
+            where,
+            select: {
+                id: true,
+                name: true,
+                image_url: true,
+                private: true,
+                creation_date: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        Message: true,
+                    },
+                },
+                Message: {
+                    orderBy: {
+                        creation_date: 'desc',
+                    },
+                    take: 1,
+                    select: {
+                        id: true,
+                        content: true,
+                        creation_date: true,
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        if (!thread) {
+            return null;
+        }
+
+        return {
+            id: thread.id,
+            name: thread.name,
+            creator: thread.user,
+            image_url: thread.image_url,
+            creation_date: thread.creation_date,
+            numberOfMessages: thread._count.Message,
+            lastMessage: thread.Message[0] ? {
+                id: thread.Message[0].id,
+                content: thread.Message[0].content,
+                creation_date: thread.Message[0].creation_date,
+                user: thread.Message[0].user,
+            } : null,
+            private: thread.private,
+        };
     }
     async createThread(data: ThreadCreateDto): Promise<Thread> {
         return await this.prisma.thread.create({
@@ -31,9 +88,62 @@ export class ThreadRepository implements IThreadRespository {
         })
     }
 
-    async getAllThreads(where?: Prisma.ThreadWhereInput): Promise<Array<Thread>> {
-        return await this.prisma.thread.findMany({
-            where
-        })
+    async getAllThreads(where?: Prisma.ThreadWhereInput) {
+        const threads = await this.prisma.thread.findMany({
+            where,
+            select: {
+                id: true,
+                name: true,
+                image_url: true,
+                creation_date: true,
+                private: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        Message: true,
+                    },
+                },
+                Message: {
+                    orderBy: {
+                        creation_date: 'desc',
+                    },
+                    take: 1,
+                    select: {
+                        id: true,
+                        content: true,
+                        creation_date: true,
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        return threads.map(thread => ({
+            id: thread.id,
+            name: thread.name,
+            creator: thread.user,
+            creation_date: thread.creation_date,
+            image_url: thread.image_url,
+            numberOfMessages: thread._count.Message,
+            lastMessage: thread.Message[0] ? {
+                id: thread.Message[0].id,
+                content: thread.Message[0].content,
+                creation_date: thread.Message[0].creation_date,
+                user: thread.Message[0].user,
+            } : null,
+            private: thread.private,
+        }));
     }
 }

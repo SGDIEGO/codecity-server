@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Inject, Logger, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, FileTypeValidator, Get, HttpStatus, Inject, Logger, MaxFileSizeValidator, Param, ParseFilePipe, Patch, Post, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { ThreadService } from './thread.service';
 import { ThreadCreateDto, ThreadUpdateDto } from './dto/thread.dto';
 import { Auth } from '../auth/decorator/auth.decorator';
@@ -8,6 +8,7 @@ import { ErrorHandlerAdapter } from 'src/common/infraestructure/adapters/errorha
 import { ILoggerAdapter } from 'src/common/application/adapters/logger.adapter';
 import { LoggerAdapter } from 'src/common/infraestructure/adapters/logger.adapter';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('threads')
 export class ThreadController {
@@ -42,9 +43,12 @@ export class ThreadController {
     @ApiBearerAuth()
     @Auth(UserRole.Middle)
     @Post()
-    async createThread(@Body() threadDto: ThreadCreateDto) {
+    @UseInterceptors(
+        FileInterceptor('file'),
+    )
+    async createThread(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
         try {
-            return await this.threadService.createThread(threadDto)
+            return await this.threadService.createThread(body.threadDto, file)
         } catch (error) {
             this.handleErrorFunc(error)
         }
@@ -52,10 +56,20 @@ export class ThreadController {
 
     @ApiBearerAuth()
     @Auth(UserRole.Staff)
-    @Put(':id')
-    async updateThread(@Param('id') id: string, @Body() threadDto: ThreadUpdateDto) {
+    @Patch(':id')
+    @UseInterceptors(
+        FileInterceptor('file'),
+    )
+    async updateThread(@Param('id') id: string, @UploadedFile(
+        new ParseFilePipe({
+            validators: [
+                new FileTypeValidator({ fileType: '.(png|jpeg|jpg|ico)' })
+            ]
+        })
+    ) file: Express.Multer.File, @Body() threadDto: ThreadUpdateDto) {
         try {
-            return await this.threadService.updateThread(id, threadDto)
+            console.log("updateing");
+            return await this.threadService.updateThread(id, threadDto, file)
         } catch (error) {
             this.handleErrorFunc(error)
         }

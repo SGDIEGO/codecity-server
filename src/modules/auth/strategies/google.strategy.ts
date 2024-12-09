@@ -20,10 +20,19 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         done: VerifyCallback,
     ): Promise<any> {
         const { emails, photos } = profile;
+        const firstValidEmail = emails.find((email) => email.verified);
+
+        if (!firstValidEmail) {
+            done(new Error('No valid email found'), null);
+            return;
+        }
+
+        const defaultProfile = photos[0].value
+
         const user = {
             name: profile.displayName,
-            emails: emails,
-            profiles: photos,
+            email: firstValidEmail.value,
+            profile_url: defaultProfile,
             token: accessToken,
             refreshToken,
         };

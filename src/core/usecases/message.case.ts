@@ -1,20 +1,25 @@
 import { Message, Prisma } from "@prisma/client";
 import { IMessageRepository } from "../domain/repositories";
 import { PrismaService } from "src/common/infraestructure/database/prisma.service";
-import { InteractionMessageUserDto, MessageCreateDto, MessageUniqueDto, MessageUpdateDto } from "src/modules/message/dto/message.dto";
+import { InteractionMessageUserDto, MessageCreateDto, MessageUpdateDto, MessageWhereUpdateDto } from "src/modules/message/dto/message.dto";
 import { randomUUID } from "crypto";
 import { Injectable } from "@nestjs/common";
+import { MessageFindDto } from "../domain/dto/message.dto";
 
 @Injectable()
 export class MessageRepository implements IMessageRepository {
     constructor(private readonly prisma: PrismaService) { }
-    async disLikeMessage(interactionUser: InteractionMessageUserDto): Promise<void> {
+    async disLikeMessage(interactionUser: InteractionMessageUserDto) {
         const { id, user_id } = interactionUser
         const dislikeInteraction = await this.prisma.interaction.findUnique({
             where: {
                 type: "dislike"
             }
         });
+
+        if (!dislikeInteraction) {
+            throw new Error('Interaction type "dislike" not found');
+        }
 
         await this.prisma.$transaction([
             this.prisma.message.update({
@@ -34,7 +39,7 @@ export class MessageRepository implements IMessageRepository {
             })
         ])
     }
-    async likeMessage(interactionUser: InteractionMessageUserDto): Promise<void> {
+    async likeMessage(interactionUser: InteractionMessageUserDto) {
         const { id, user_id } = interactionUser
 
         const likeInteraction = await this.prisma.interaction.findUnique({
@@ -67,15 +72,85 @@ export class MessageRepository implements IMessageRepository {
             })
         ])
     }
-    async getAllMessages(): Promise<Array<Message>> {
-        return await this.prisma.message.findMany()
+    async getAllMessages(where?: MessageFindDto) {
+        const messages = await this.prisma.message.findMany({
+            where,
+            select: {
+                id: true,
+                content: true,
+                likes: true,
+                dislikes: true,
+                creation_date: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        profile_url: true
+                    },
+                },
+                parent_message: {
+                    select: {
+                        id: true,
+                    },
+                },
+            },
+        });
+
+        return messages.map(message => ({
+            id: message.id,
+            content: message.content,
+            creator: message.user,
+            likes: message.likes,
+            dislikes: message.dislikes,
+            creation_date: message.creation_date,
+            parent_message: message.parent_message ? {
+                id: message.parent_message.id,
+            } : null,
+        }));
     }
-    async getMessageUnique(where: Prisma.MessageWhereInput): Promise<Message> {
-        return await this.prisma.message.findFirst({
-            where
-        })
+    async getMessageUnique(where: Prisma.MessageWhereInput) {
+        const message = await this.prisma.message.findFirst({
+            where,
+            select: {
+                id: true,
+                content: true,
+                likes: true,
+                dislikes: true,
+                creation_date: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        profile_url: true
+                    },
+                },
+                parent_message: {
+                    select: {
+                        id: true,
+                    },
+                },
+            },
+        });
+
+        if (!message) {
+            return null;
+        }
+
+        return {
+            id: message.id,
+            content: message.content,
+            creator: message.user,
+            likes: message.likes,
+            dislikes: message.dislikes,
+            creation_date: message.creation_date,
+            parent_message: message.parent_message ? {
+                id: message.parent_message.id,
+            } : null,
+        };
     }
-    async createMessage(data: MessageCreateDto): Promise<Message> {
+    async createMessage(data: MessageCreateDto) {
         return await this.prisma.message.create({
             data: {
                 ...data,
@@ -83,11 +158,18 @@ export class MessageRepository implements IMessageRepository {
             }
         })
     }
-    async updateMessage(where: MessageUniqueDto, data: MessageUpdateDto): Promise<Message> {
+    async updateMessage(where: MessageWhereUpdateDto, data: MessageUpdateDto) {
         return await this.prisma.message.update({
             where,
             data
         })
     }
 
+    async deleteMessage(where: MessageFindDto) {
+        return await this.prisma.message.delete({
+            where: {
+                id: where.id
+            }
+        })
+    }
 }

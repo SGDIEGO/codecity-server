@@ -59,6 +59,16 @@ export class MessageService {
         }
     }
 
+    async deleteMessage(id: string) {
+        try {
+            return await this.messageRepository.deleteMessage({
+                id
+            })
+        } catch (error) {
+            this.errorHandling.handleControllerError(this.logger, error);
+        }
+    }
+
     async LikeUser(body: InteractionMessageUserDto) {
         try {
             return this.messageRepository.likeMessage(body)
@@ -82,4 +92,5 @@ export class MessageService {
             this.errorHandling.handleControllerError(this.logger, error);
         }
     }
+
 }

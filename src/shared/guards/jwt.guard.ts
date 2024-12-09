@@ -29,11 +29,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (validRoles.length == 0) return true;
 
     const req = context.switchToHttp().getRequest();
-    const user = req.user as User;
+    const user = req.user as any;
 
-    if (!user) throw new BadRequestException('User not found');
+    if (!user || !user.user_role) throw new BadRequestException('User not found');
 
-    if (validRoles.includes(user.user_role_id)) {
+    if (validRoles.includes(user.user_role.name)) {
       return true;
     }
 

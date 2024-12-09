@@ -16,7 +16,6 @@ import { IErrorHandlerAdapter } from 'src/common/application';
 import { ErrorHandlerAdapter } from 'src/common/infraestructure/adapters/errorhandle.adapter';
 import { ILoggerAdapter } from 'src/common/application/adapters/logger.adapter';
 import { LoggerAdapter } from 'src/common/infraestructure/adapters/logger.adapter';
-import { ApiBody } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {

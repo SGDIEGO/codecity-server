@@ -21,13 +21,12 @@ export class S3Service {
 
     async uploadFile(file: Express.Multer.File): Promise<string> {
         const bucketName = process.env.S3_BUCKET_NAME;
-        const fileKey = `${uuidv4()}${extname(file.originalname)}`;
+        const fileKey = `public/${uuidv4()}${extname(file.originalname)}`;
 
         const command = new PutObjectCommand({
             Bucket: bucketName,
             Key: fileKey,
             Body: file.buffer,
-            ACL: 'public-read',
         });
 
         await this.s3.send(command);
@@ -40,7 +39,7 @@ export class S3Service {
 
         const command = new DeleteObjectCommand({
             Bucket: bucketName,
-            Key: fileKey,
+            Key: `public/${fileKey}`,
         });
 
         await this.s3.send(command);

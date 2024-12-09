@@ -1,5 +1,4 @@
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
-import { Forum } from '@prisma/client';
 import { IForumRepository } from 'src/core/domain/repositories/forum.repository';
 import { ForumCreateDto, ForumUpdateDto } from './dto/forum.dto';
 import { ForumRepository } from 'src/core/usecases/forum.case';
@@ -15,29 +14,29 @@ export class ForumService {
     private readonly threadRepository: IThreadRespository
   ) { }
 
-  async getAllForums(page: number, limit: number): Promise<Forum[]> {
+  async getAllForums(page: number, limit: number) {
     return await this.forumRepository.findAll((page - 1) * limit, limit);
   }
 
-  async getForum(id: string): Promise<Forum> {
+  async getForum(id: string) {
     const forum = await this.forumRepository.find({ id });
     if (!forum) throw new BadRequestException('Forum not found');
 
     return forum;
   }
 
-  async createForum(body: ForumCreateDto): Promise<Forum> {
+  async createForum(body: ForumCreateDto) {
     return await this.forumRepository.create(body);
   }
 
-  async updateForum(id: string, body: ForumUpdateDto): Promise<Forum> {
+  async updateForum(id: string, body: ForumUpdateDto) {
     const forum = await this.forumRepository.update({ id }, body);
     if (!forum) throw new BadRequestException('Forum not found');
 
     return forum;
   }
 
-  async deleteForum(id: string): Promise<Forum> {
+  async deleteForum(id: string) {
     const forum = await this.forumRepository.delete({ id });
     if (!forum) throw new NotFoundException('Error deleting forum')
 

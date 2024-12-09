@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Patch, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UserCreateDto, UserUpdateDto } from './dto';
 import { UserService } from './user.service';
 import { Auth } from '../auth/decorator/auth.decorator';
@@ -21,16 +21,21 @@ export class UserController {
         return await this.userService.getUserById(id)
     }
 
+    @Get(':id/interactions')
+    async getInteractions(@Param('id') id: string) {
+        return await this.userService.getInteractions(id)
+    }
+
     @Post()
     async createUser(@Body() body: UserCreateDto) {
         return await this.userService.createUser(body)
     }
 
-    @Put(':id')
+    @Patch(':id')
     @UseInterceptors(
         FileInterceptor('file'),
     )
-    async updateUser(@Param('id') id: string, @UploadedFile(new FileSizeValidationPipe()) file: Express.Multer.File, @Body() body: UserUpdateDto) {
+    async updateUser(@Param('id') id: string, @UploadedFile() file: Express.Multer.File, @Body() body: UserUpdateDto) {
         return await this.userService.updateUser(id, body, file)
     }
 

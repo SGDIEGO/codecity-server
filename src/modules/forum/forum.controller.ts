@@ -7,7 +7,7 @@ import {
   Get,
   Param,
   Body,
-  Put,
+  Patch,
   Delete,
   Query,
   Inject,
@@ -65,7 +65,7 @@ export class ForumController {
 
   @ApiBearerAuth()
   @Auth(UserRole.Staff)
-  @Put(':id')
+  @Patch(':id')
   async updateForum(@Param('id') id: string, @Body() newForum: ForumUpdateDto) {
     try {
       return await this.forumService.updateForum(id, newForum);

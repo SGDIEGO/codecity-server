@@ -22,6 +22,6 @@ import { AdapterModule } from 'src/common/infraestructure';
   ],
   controllers: [AuthController],
   providers: [AuthService, EncryptService, GoogleStrategy],
-  exports: [AuthService /*JwtModule*/, PassportModule],
+  exports: [AuthService, JwtModule, PassportModule],
 })
 export class AuthModule { }

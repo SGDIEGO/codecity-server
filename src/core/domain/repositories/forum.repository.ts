@@ -2,8 +2,8 @@ import { Forum, Prisma, PrismaClient, PrismaPromise } from '@prisma/client';
 import { ForumCreateDto, ForumFindDto } from 'src/modules/forum/dto/forum.dto';
 
 export interface IForumRepository {
-  findAll(skip: number, take: number): Promise<Array<Forum>>;
-  find(where: ForumFindDto): Promise<Forum>;
+  findAll(skip: number, take: number): Promise<ForumFindDto[]>;
+  find(where: ForumFindDto): Promise<ForumFindDto>;
   create(forumDto: ForumCreateDto): Promise<Forum>;
   update(
     where: Prisma.ForumWhereUniqueInput,

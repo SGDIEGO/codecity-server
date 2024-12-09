@@ -5,6 +5,7 @@ import { ForumModule } from 'src/modules/forum/forum.module';
 import { ThreadModule } from '../thread/thread.module';
 import { MessageModule } from '../message/message.module';
 import { UserModule } from '../user/user.module';
+import { WebSocketModule } from '../websockets/websocket.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { UserModule } from '../user/user.module';
     ForumModule,
     ThreadModule,
     MessageModule,
-    UserModule
+    UserModule,
+    WebSocketModule
   ]
 })
 export class AppModule { }

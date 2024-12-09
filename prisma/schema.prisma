@@ -10,7 +10,7 @@ datasource db {
 model UserRole {
   id               String @id @default(uuid())
   min_interactions Int
-  name             String
+  name             String @unique
   users            User[]
 }
 
@@ -22,6 +22,7 @@ model User {
   profile_url         String?
   user_role_id        String
   interactions        Int                   @default(0)
+  join_date           DateTime              @default(now())
   Forum               Forum[]
   Message             Message[]
   MessageInteractions MessageInteractions[]
@@ -35,6 +36,7 @@ model Forum {
   name          String   @unique
   creation_date DateTime @default(now())
   creator_id    String
+  image_url     String?
   creator       User     @relation(fields: [creator_id], references: [id])
   Thread        Thread[]
 }
@@ -62,7 +64,8 @@ model Message {
   parent_message_id   String?
   thread_id           String
   user_id             String
-  parent_message      Message?              @relation("MessageToMessage", fields: [parent_message_id], references: [id])
+  creation_date       DateTime              @default(now())
+  parent_message      Message?              @relation("MessageToMessage", fields: [parent_message_id], references: [id], onDelete: Cascade)
   message             Message[]             @relation("MessageToMessage")
   thread              Thread                @relation(fields: [thread_id], references: [id])
   user                User                  @relation(fields: [user_id], references: [id])

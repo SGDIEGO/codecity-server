@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Logger, Param, Post, Put, Request } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Logger, Param, Patch, Post, Put, Req, Request } from '@nestjs/common';
 import { MessageService } from './message.service';
 import { InteractionMessageUserDto, MessageCreateDto, MessageUpdateDto } from './dto/message.dto';
 import { Auth } from '../auth/decorator/auth.decorator';
@@ -23,7 +23,7 @@ export class MessageController {
     @ApiBearerAuth()
     @Auth(UserRole.Student)
     @Post()
-    async createMessage(@Request() req, @Body() messageDto: MessageCreateDto) {
+    async createMessage(@Body() messageDto: MessageCreateDto) {
         return await this.messageService.createMessage(messageDto)
     }
 
@@ -33,16 +33,24 @@ export class MessageController {
         return await this.messageService.updateMessage(id, messageDto)
     }
 
+    @ApiBearerAuth()
+    @Auth()
+    @Delete(':id/')
+    async deleteMessage(@Req() req, @Param('id') id: string) {
+        console.log("req: ", req);
+        return await this.messageService.deleteMessage(id);
+    }
+
     @Auth(UserRole.Student)
     @ApiBearerAuth()
-    @Put(":id/like")
+    @Patch(":id/like")
     async likeUser(@Body() likeMessageUserDto: InteractionMessageUserDto) {
         return await this.messageService.LikeUser(likeMessageUserDto);
     }
 
     @Auth(UserRole.Student)
     @ApiBearerAuth()
-    @Put(":id/dislike")
+    @Patch(":id/dislike")
     async disLikeUser(@Body() dislikeMessageUserDto: InteractionMessageUserDto) {
         return await this.messageService.disLikeUser(dislikeMessageUserDto);
     }

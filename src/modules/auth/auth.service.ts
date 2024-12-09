@@ -6,7 +6,7 @@ import { IUserRepository } from 'src/core/domain/repositories/user.repository';
 import { EncryptService } from 'src/shared/utils/encryption.service';
 import { UserRole } from 'src/shared/enums/role.enums';
 import { UserRepository } from 'src/core/usecases/user.case';
-import { AuthResponseDto } from './dto/token.dto';
+import { AuthResponseDto, AuthResponseDtoFunc } from './dto/token.dto';
 
 @Injectable()
 export class AuthService {
@@ -24,47 +24,49 @@ export class AuthService {
     const passwordValidate = await this.encryptService.comparePasswords(user.password as string, userInfo.password)
     if (!passwordValidate) throw new BadRequestException('Incorrect password');
 
-    const token = await this.signToken({ id: userInfo.id });
-    return {
-      token,
-      user_id: userInfo.id
-    }
+    const token = await this.signToken({
+      ...userInfo,
+    });
+
+    return AuthResponseDtoFunc(token, userInfo)
   }
 
   async signUp(user: UserSignupDto): Promise<AuthResponseDto> {
     const hashedPassword = await this.encryptService.hashPassword(user.password);
     const userInfo = await this.userRepository.create({
       id: await this.encryptService.generateRandomUUID(),
-      name: user.name,
-      email: user.email,
       password: hashedPassword,
       user_role: {
         connect: {
-          id: UserRole.Student,
+          name: UserRole.Student,
         }
-      }
+      },
+      ...user
     });
 
-    const token = await this.signToken({ id: userInfo.id });
-    return {
-      token,
-      user_id: userInfo.id
-    };
+    const token = await this.signToken({
+      ...userInfo
+    });
+
+    return AuthResponseDtoFunc(token, userInfo)
   }
 
-  async signInGoogle(user: UserSigninGoogleOauthDto) {
-    const userInfo = await this.userRepository.find({ email: user.email });
+  async signInGoogle(user: UserSigninGoogleOauthDto): Promise<AuthResponseDto> {
+    const userInfo = await this.userRepository.getUser({ email: user.email });
+    
     if (userInfo) {
-      const token = await this.signToken({ id: userInfo.id });
-      return {
-        token,
-        user_id: userInfo.id
-      }
+      const token = await this.signToken({
+        ...userInfo
+      });
+
+      return AuthResponseDtoFunc(token, userInfo)
     }
 
     return await this.signUp({
-      ...user,
+      name: user.name,
+      email: user.email,
       password: await this.encryptService.generateRandomUUID(),
+      profile_url: user.profile_url
     })
   }
 
