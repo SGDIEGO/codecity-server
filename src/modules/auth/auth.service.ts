@@ -43,6 +43,7 @@ export class AuthService {
           name: UserRole.Student,
         }
       },
+      name: user.name,
       email: user.email,
     });
 

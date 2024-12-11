@@ -69,12 +69,19 @@ export class WSGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 message: data.message,
             });
 
-            console.log(this.users.length);
+            // Send message to all users
+            this.users.forEach((u) => {
+                if (u.socket.id != socket.id)
+                    u.socket.emit(SocketEvents.SENDMESSAGETOUSER, {
+                        sender: userFrom.fullName,
+                        content: data.message
+                    });
+            })
 
-            userTo.socket.emit(SocketEvents.SENDMESSAGETOUSER, {
-                sender: userFrom.fullName,
-                content: data.message
-            });
+            /*             userTo.socket.emit(SocketEvents.SENDMESSAGETOUSER, {
+                            sender: userFrom.fullName,
+                            content: data.message
+                        }); */
         } catch (error) {
             this.handleError(socket, error)
         }
