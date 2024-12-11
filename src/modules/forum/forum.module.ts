@@ -7,6 +7,7 @@ import { ForumService } from './forum.service';
 import { DmsModule } from '../dms/dms.module';
 import { AdapterModule } from 'src/common/infraestructure';
 import { AuthModule } from '../auth/auth.module';
+import { S3Service } from 'src/shared/services/s3.service';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AuthModule } from '../auth/auth.module';
   providers: [
     JwtStrategy,
     ForumService,
+    S3Service
   ],
   controllers: [ForumController],
 })

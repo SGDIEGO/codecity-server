@@ -6,7 +6,7 @@ import { IUserRepository } from 'src/core/domain/repositories/user.repository';
 import { UserRepository } from 'src/core/usecases/user.case';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     @Inject(UserRepository)
     private readonly userRepository: IUserRepository,
@@ -19,7 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: any): Promise<User> {
     const { id } = payload;
-    const user = await this.userRepository.getUser({id});
+    const user = await this.userRepository.getUser({ id });
 
     if (!user) {
       throw new UnauthorizedException('Token not valid');

@@ -21,10 +21,8 @@ import { SongRequestSocket } from './models/song-request.model';
 export class WSGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private logger: Logger = new Logger('AppGateWay');
     private users: Array<UserSocket> = [];
-    private songs: Array<SongRequestSocket> = [];
 
     constructor(
-        private readonly socketAdapter: SocketAdapter,
         private readonly websocketService: WsService,
     ) { }
 
@@ -32,82 +30,77 @@ export class WSGateway implements OnGatewayConnection, OnGatewayDisconnect {
     server: Server;
 
     async handleConnection(socket: Socket) {
-        const user = await this.websocketService.handleConnection(socket);
-        this.users.push(user);
-        this.logger.log('Client connected', user.id);
+        try {
+            const user = await this.websocketService.handleConnection(socket);
+            this.users.push(user);
+            this.logger.log('Client connected', user.id);
+        } catch (error) {
+            this.handleError(socket, error)
+        }
     }
 
     async handleDisconnect(socket: Socket) {
-        this.users = this.users.filter((c) => c.socket.id != socket.id);
-        this.logger.log('Client disconnected', socket.id);
-    }
-
-    @SubscribeMessage(SocketEvents.GETUSERSBYROOM)
-    async getUsersByRoom(socket: Socket) {
-        const userFind = this.users.find(
-            (user) => user.socket.id == socket.id,
-        );
-        if (!userFind.current_room) {
-            const error = `User is not in any room`
+        try {
+            this.users = this.users.filter((c) => c.socket.id != socket.id);
+            this.logger.log('Client disconnected', socket.id);
+        } catch (error) {
             this.handleError(socket, error)
         }
+    }
 
-        const users_in_room = this.users.filter(
-            (u) => u.current_room == userFind.current_room,
-        );
+    @SubscribeMessage(SocketEvents.SENDMESSAGETOUSER)
+    async sendMessageToUser(socket: Socket, data: IMessage) {
+        try {
+            const userFrom = this.users.find(
+                (u) => u.socket.id == socket.id,
+            );
 
-        const users_names = users_in_room.map(user => {
-            return {
-                name: user.fullName,
-                url_profile: user.url_profile,
+            const userTo = this.users.find(
+                (u) => u.id == data.to,
+            )
+
+            if (!userFrom || !userTo) {
+                throw new Error('User not found');
             }
-        })
-        socket.emit(SocketEvents.GETUSERSBYROOM, users_names);
-    }
 
-    @SubscribeMessage(SocketEvents.SENDMESSAGEROOM)
-    async sendMessageRoom(socket: Socket, message: any) {
-        const { fullName, current_room } = this.users.find(
-            (user) => user.socket.id == socket.id,
-        );
-        if (!current_room) {
-            const error = `User ${fullName} is not in any room`
+            await this.websocketService.saveMessage({
+                from: userFrom.id,
+                to: userTo.id,
+                message: data.message,
+            });
+
+            console.log(this.users.length);
+
+            userTo.socket.emit(SocketEvents.SENDMESSAGETOUSER, {
+                sender: userFrom.fullName,
+                content: data.message
+            });
+        } catch (error) {
             this.handleError(socket, error)
         }
-
-        this.socketAdapter.emitRoom(
-            this.users,
-            current_room,
-            SocketEvents.SENDMESSAGEROOM,
-            message,
-        );
     }
 
-    @SubscribeMessage(SocketEvents.VOTESONGREQUEST)
-    async voteSongRequest(socket: Socket, song_request_id: string) {
-        const { fullName, current_room } = this.users.find(
-            (user) => user.socket.id == socket.id,
-        );
+    @SubscribeMessage(SocketEvents.GETMESSAGES)
+    async getMessages(socket: Socket, data: { to: string }) {
+        try {
+            const user = this.users.find(
+                (u) => u.socket.id == socket.id,
+            );
 
-        if (!current_room) {
-            const error = `User ${fullName} is not in any room`
+            if (!user) {
+                throw new Error('User not found');
+            }
+
+            const messages = await this.websocketService.getMessages(user.id, data.to);
+
+            socket.emit(SocketEvents.GETMESSAGES, messages);
+        } catch (error) {
             this.handleError(socket, error)
         }
-
-        this.songs = this.songs.map((s) =>
-            s.id == song_request_id ? { ...s, votes: s.votes + 1 } : s,
-        );
-
-        this.socketAdapter.emitRoom(
-            this.users,
-            current_room,
-            SocketEvents.VOTESONGREQUEST,
-            song_request_id,
-        );
     }
 
     async handleError(socket: Socket, error: string) {
         socket.emit(SocketEvents.ERRORS, error)
-        throw new Error(error);
+        this.logger.error(error)
     }
 }

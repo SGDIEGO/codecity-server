@@ -49,7 +49,6 @@ export class AuthController {
   @Get('google')
   @UseGuards(GoogleOAuthGuard)
   async googleAuth() {
-    console.log("google");
   }
 
   @Get('google-redirect')

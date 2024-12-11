@@ -37,7 +37,6 @@ export class MessageController {
     @Auth()
     @Delete(':id/')
     async deleteMessage(@Req() req, @Param('id') id: string) {
-        console.log("req: ", req);
         return await this.messageService.deleteMessage(id);
     }
 

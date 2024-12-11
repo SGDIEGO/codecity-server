@@ -26,20 +26,4 @@ export class SocketAdapter {
             }
         }
     }
-
-    async emitRoom(
-        sockets: Array<UserSocket>,
-        room_id: string,
-        event: string,
-        message: any,
-    ) {
-        for (let i = 0; i < sockets.length; i++) {
-            if (
-                sockets[i].current_room &&
-                sockets[i].current_room === room_id
-            ) {
-                sockets[i].socket.emit(event, message);
-            }
-        }
-    }
 }

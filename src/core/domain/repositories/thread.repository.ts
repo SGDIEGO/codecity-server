@@ -5,6 +5,6 @@ import { ThreadDto } from "../dto/thread.dto";
 export interface IThreadRespository {
     getAllThreads(where?: Prisma.ThreadWhereInput): Promise<ThreadDto[]>
     getThreadUnique(where: Prisma.ThreadWhereInput): Promise<ThreadDto | null>
-    createThread(threadDto: ThreadCreateDto): Promise<Thread>
+    createThread(threadDto: ThreadCreateDto)
     updateThread(where: Prisma.ThreadWhereUniqueInput, threadDto: ThreadUpdateDto): Promise<Thread>
 }

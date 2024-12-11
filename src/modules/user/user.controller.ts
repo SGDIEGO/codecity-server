@@ -11,26 +11,32 @@ export class UserController {
     constructor(
         private readonly userService: UserService
     ) { }
+
+    @Auth()
     @Get()
     async getUsers() {
         return await this.userService.getUsers()
     }
 
+    @Auth()
     @Get(':id')
     async getUserById(@Param('id') id: string) {
         return await this.userService.getUserById(id)
     }
 
+    @Auth()
     @Get(':id/interactions')
     async getInteractions(@Param('id') id: string) {
         return await this.userService.getInteractions(id)
     }
 
+    @Auth(UserRole.Staff)
     @Post()
     async createUser(@Body() body: UserCreateDto) {
         return await this.userService.createUser(body)
     }
 
+    @Auth()
     @Patch(':id')
     @UseInterceptors(
         FileInterceptor('file'),
@@ -39,7 +45,7 @@ export class UserController {
         return await this.userService.updateUser(id, body, file)
     }
 
-    //@Auth(UserRole.Staff)
+    @Auth(UserRole.Staff)
     @Get('/roles/generate')
     async generateRoles() {
         return await this.userService.generateRoles()

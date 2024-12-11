@@ -73,13 +73,19 @@ export class ThreadRepository implements IThreadRespository {
             private: thread.private,
         };
     }
-    async createThread(data: ThreadCreateDto): Promise<Thread> {
-        return await this.prisma.thread.create({
-            data: {
-                ...data,
-                id: randomUUID()
-            }
-        })
+    async createThread(data: ThreadCreateDto){
+        await this.prisma.$transaction([
+            this.prisma.thread.create({
+                data: {
+                    ...data,
+                    id: randomUUID()
+                }
+            }),
+            this.prisma.user.update({
+                where: { id: data.user_id },
+                data: { interactions: { increment: 10 } }
+            })
+        ])
     }
     async updateThread(where: Prisma.ThreadWhereUniqueInput, data: ThreadUpdateDto): Promise<Thread> {
         return await this.prisma.thread.update({

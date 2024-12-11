@@ -151,12 +151,18 @@ export class MessageRepository implements IMessageRepository {
         };
     }
     async createMessage(data: MessageCreateDto) {
-        return await this.prisma.message.create({
-            data: {
-                ...data,
-                id: randomUUID(),
-            }
-        })
+        await this.prisma.$transaction([
+            this.prisma.message.create({
+                data: {
+                    ...data,
+                    id: randomUUID(),
+                }
+            }),
+            this.prisma.user.update({
+                where: { id: data.user_id },
+                data: { interactions: { increment: 5 } }
+            })
+        ])
     }
     async updateMessage(where: MessageWhereUpdateDto, data: MessageUpdateDto) {
         return await this.prisma.message.update({

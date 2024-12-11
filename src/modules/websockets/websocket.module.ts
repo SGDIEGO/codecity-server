@@ -9,13 +9,13 @@ import { UserService } from './services/user.service';
 import { WsStrategy } from './strategies/ws.strategy';
 import { DatabaseModule } from 'src/common/infraestructure/database/database.module';
 import { AuthModule } from '../auth/auth.module';
+import { ChatService } from './services/chat.service';
 
 @Module({
     imports: [
         ConfigModule,
         DatabaseModule,
-        PassportModule.register({ defaultStrategy: 'jwt' }),
-        AuthModule,
+        PassportModule.register({ defaultStrategy: 'ws' }),
     ],
     providers: [
         WsService,
@@ -24,6 +24,7 @@ import { AuthModule } from '../auth/auth.module';
         WsStrategy,
         JwtService,
         UserService,
+        ChatService
     ],
 })
 export class WebSocketModule { }

@@ -32,6 +32,8 @@ export class AuthService {
   }
 
   async signUp(user: UserSignupDto): Promise<AuthResponseDto> {
+    if (user.password !== user.confirmPassword) throw new BadRequestException('Password does not match');
+
     const hashedPassword = await this.encryptService.hashPassword(user.password);
     const userInfo = await this.userRepository.create({
       id: await this.encryptService.generateRandomUUID(),
@@ -41,7 +43,7 @@ export class AuthService {
           name: UserRole.Student,
         }
       },
-      ...user
+      email: user.email,
     });
 
     const token = await this.signToken({
@@ -53,7 +55,7 @@ export class AuthService {
 
   async signInGoogle(user: UserSigninGoogleOauthDto): Promise<AuthResponseDto> {
     const userInfo = await this.userRepository.getUser({ email: user.email });
-    
+
     if (userInfo) {
       const token = await this.signToken({
         ...userInfo
@@ -62,11 +64,14 @@ export class AuthService {
       return AuthResponseDtoFunc(token, userInfo)
     }
 
+    const password = await this.encryptService.generateRandomUUID()
+
     return await this.signUp({
       name: user.name,
       email: user.email,
-      password: await this.encryptService.generateRandomUUID(),
-      profile_url: user.profile_url
+      profile_url: user.profile_url,
+      password,
+      confirmPassword: password
     })
   }
 

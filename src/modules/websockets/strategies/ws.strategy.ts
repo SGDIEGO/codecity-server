@@ -8,14 +8,13 @@ import { IUserRepository } from 'src/core/domain/repositories';
 import { UserRepository } from 'src/core/usecases';
 
 @Injectable()
-export class WsStrategy extends PassportStrategy(Strategy) {
+export class WsStrategy extends PassportStrategy(Strategy, 'ws') {
     constructor(
         @Inject(UserRepository)
         private readonly userRepository: IUserRepository,
-        configService: ConfigService,
     ) {
         super({
-            secretOrKey: configService.get('JWT_KEY'),
+            secretOrKey: process.env.JWT_KEY,
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         });
     }

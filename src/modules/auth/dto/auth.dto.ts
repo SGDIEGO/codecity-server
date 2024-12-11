@@ -18,6 +18,9 @@ export class UserSignupDto extends PickType(UserEntity, ['name', 'email', 'passw
     @IsStrongPassword()
     password: string;
 
+    @IsStrongPassword()
+    confirmPassword: string
+
     @IsOptional()
     profile_url?: string;
 }

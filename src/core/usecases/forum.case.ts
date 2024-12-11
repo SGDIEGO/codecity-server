@@ -25,12 +25,18 @@ export class ForumRepository implements IForumRepository {
   }
 
   async create(forumDto: ForumCreateDto) {
-    return await this.prisma.forum.create({
-      data: {
-        ...forumDto,
-        id: randomUUID()
-      }
-    });
+    await this.prisma.$transaction([
+      this.prisma.forum.create({
+        data: {
+          ...forumDto,
+          id: randomUUID()
+        }
+      }),
+      this.prisma.user.update({
+        where: { id: forumDto.creator_id },
+        data: { interactions: { increment: 10 } }
+      })
+    ])
   }
 
   async findAll(skip: number, take: number) {

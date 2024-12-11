@@ -3,31 +3,47 @@ import { JwtService } from '@nestjs/jwt';
 import { Socket } from 'socket.io';
 import { UserService } from './services/user.service';
 import { UserSocket } from './models/user.model';
+import { SaveMessageDto } from 'src/core/domain/dto/chat.dto';
+import { ChatService } from './services/chat.service';
 
 @Injectable()
 export class WsService {
     constructor(
         private readonly jwtService: JwtService,
-        private readonly userService: UserService,
+        private readonly chatService: ChatService
     ) { }
 
     async handleConnection(socket: Socket): Promise<UserSocket> {
         const token = socket.handshake.headers.authorization.split(' ')[1];
-        const { user_id } = await this.jwtService.decode(token);
-        const music_room_id = socket.handshake.query.music_room_id as string | undefined;
-        if (!music_room_id) {
-            throw new Error(`User must to be in any music room`)
+
+        if (!token) {
+            throw new Error('Unauthorized');
         }
 
-        const user = await this.userService.getUserById(user_id);
+        const tokendecode = await this.jwtService.decode(token);
         return {
-            id: user.id,
-            fullName: user.name,
-            url_profile: user.profile_url,
+            id: tokendecode.id,
+            fullName: tokendecode.name,
+            url_profile: tokendecode.profile_url,
             socket,
-            current_room: music_room_id,
         };
     }
 
     async handleDisconnect(socket: Socket): Promise<void> { }
+
+    async saveMessage(data: SaveMessageDto) {
+        try {
+            this.chatService.saveMessage(data)
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async getMessages(from: string, to: string) {
+        try {
+            return this.chatService.getMessages(from, to);
+        } catch (error) {
+            throw error;
+        }
+    }
 }

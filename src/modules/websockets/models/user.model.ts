@@ -6,5 +6,4 @@ export interface UserSocket {
     url_profile: string | null
 
     socket: Socket;
-    current_room: string;
 }

@@ -60,15 +60,16 @@ export class ThreadController {
     @UseInterceptors(
         FileInterceptor('file'),
     )
-    async updateThread(@Param('id') id: string, @UploadedFile(
+    async updateThread(@Param('id') id: string, @Body() threadDto: ThreadUpdateDto, @UploadedFile(
         new ParseFilePipe({
             validators: [
                 new FileTypeValidator({ fileType: '.(png|jpeg|jpg|ico)' })
             ]
         })
-    ) file: Express.Multer.File, @Body() threadDto: ThreadUpdateDto) {
+    ) file?: Express.Multer.File) {
         try {
-            console.log("updateing");
+            threadDto.private = Boolean(threadDto.private)
+            threadDto.access_price = Number(threadDto.access_price)
             return await this.threadService.updateThread(id, threadDto, file)
         } catch (error) {
             this.handleErrorFunc(error)

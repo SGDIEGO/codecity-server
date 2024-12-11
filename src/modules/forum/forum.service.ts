@@ -4,6 +4,7 @@ import { ForumCreateDto, ForumUpdateDto } from './dto/forum.dto';
 import { ForumRepository } from 'src/core/usecases/forum.case';
 import { IThreadRespository } from 'src/core/domain/repositories/thread.repository';
 import { ThreadRepository } from 'src/core/usecases/thread.case';
+import { S3Service } from 'src/shared/services/s3.service';
 
 export class ForumService {
   constructor(
@@ -11,7 +12,9 @@ export class ForumService {
     private readonly forumRepository: IForumRepository,
 
     @Inject(ThreadRepository)
-    private readonly threadRepository: IThreadRespository
+    private readonly threadRepository: IThreadRespository,
+
+    private readonly s3Service: S3Service
   ) { }
 
   async getAllForums(page: number, limit: number) {
@@ -25,15 +28,27 @@ export class ForumService {
     return forum;
   }
 
-  async createForum(body: ForumCreateDto) {
+  async createForum(body: ForumCreateDto, file?: Express.Multer.File) {
+    if (file) {
+        body.image_url = await this.s3Service.uploadFile(file);
+    }
+
     return await this.forumRepository.create(body);
   }
 
-  async updateForum(id: string, body: ForumUpdateDto) {
-    const forum = await this.forumRepository.update({ id }, body);
-    if (!forum) throw new BadRequestException('Forum not found');
+  async updateForum(id: string, body: ForumUpdateDto, file?: Express.Multer.File) {
+    const existingForum = await this.forumRepository.find({ id })
+    if (!existingForum) throw new NotFoundException('Forum not found');
 
-    return forum;
+    if (file) {
+        if (existingForum.image_url) {
+            const fileKey = existingForum.image_url.split('/').pop();
+            await this.s3Service.deleteFile(fileKey);
+        }
+        body.image_url = await this.s3Service.uploadFile(file);
+    }
+
+    return await this.forumRepository.update({ id }, body)
   }
 
   async deleteForum(id: string) {

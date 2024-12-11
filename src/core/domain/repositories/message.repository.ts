@@ -5,7 +5,7 @@ import { InteractionMessageUserDto, MessageCreateDto, MessageUniqueDto, MessageU
 export interface IMessageRepository {
     getAllMessages(where?: MessageUniqueDto): Promise<Array<MessageFindDto>>
     getMessageUnique(where: MessageUniqueDto): Promise<MessageFindDto>
-    createMessage(messageDto: MessageCreateDto): Promise<Message>
+    createMessage(xdata: MessageCreateDto)
     updateMessage(where: MessageWhereUpdateDto, messageDto: MessageUpdateDto): Promise<Message>
     deleteMessage(where: MessageUniqueDto): Promise<Message>
 

@@ -26,6 +26,8 @@ model User {
   Forum               Forum[]
   Message             Message[]
   MessageInteractions MessageInteractions[]
+  MessageUsersFrom    MessageUsers[]        @relation("from")
+  MessageUsersTo      MessageUsers[]        @relation("to")
   Payments            Payments[]
   Thread              Thread[]
   user_role           UserRole              @relation(fields: [user_role_id], references: [id])
@@ -96,4 +98,14 @@ model Payments {
   user_id           String
   thread            Thread   @relation(fields: [thread_id], references: [id])
   user              User     @relation(fields: [user_id], references: [id])
+}
+
+model MessageUsers {
+  id       String   @id @default(uuid())
+  content  String
+  from     String
+  to       String
+  date     DateTime @default(now())
+  userFrom User     @relation("from", fields: [from], references: [id])
+  userTo   User     @relation("to", fields: [to], references: [id])
 }

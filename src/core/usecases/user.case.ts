@@ -8,8 +8,18 @@ import { UserRole } from 'src/shared/enums/role.enums';
 @Injectable()
 export class UserRepository implements IUserRepository {
   constructor(private readonly prisma: PrismaService) { }
-  async getAll(): Promise<Array<User>> {
-    return await this.prisma.user.findMany()
+  async getAll(): Promise<Array<UserSelectDto>> {
+    return await this.prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        profile_url: true,
+        user_role: true,
+        interactions: true,
+        join_date: true,
+      }
+    })
   }
 
   async getUser(where: Prisma.UserWhereUniqueInput): Promise<UserSelectDto> {
